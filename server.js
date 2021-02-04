@@ -54,8 +54,6 @@ const connectToMongoDb = async () => {
   }
 };
 
-function updateCounter() {}
-
 connectToMongoDb();
 
 app.post('/register',async (req, res) => {
