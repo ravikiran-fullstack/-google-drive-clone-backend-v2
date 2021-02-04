@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 const Schema = mongoose.Schema;
 
 const shortUrlSchema = new Schema({
@@ -22,4 +22,4 @@ const shortUrlSchema = new Schema({
 
 const ShortUrl = mongoose.model('ShortUrl', shortUrlSchema);
 
-module.exports = ShortUrl;
+export default ShortUrl;

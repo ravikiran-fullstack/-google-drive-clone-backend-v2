@@ -1,32 +1,35 @@
-require('dotenv').config()        // process.env
+
+import dotenv from "dotenv";
+dotenv.config()        // process.env
 //const config = require('./config.js');
-const path = require("path");
+import path from 'path';
+import express from 'express';
+import bodyParser from "body-parser";
+import cookieParser from 'cookie-parser';
+import mongoose from"mongoose";
+import cors from "cors";
+import bcrypt from 'bcrypt';
+import validUrl from 'valid-url';
+import {nanoid} from 'nanoid';
+import jwt from 'jsonwebtoken';
 
-const express = require("express");
-const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser')
-const mongoose = require("mongoose");
-const cors = require("cors");
-const bcrypt = require('bcrypt');
-const validUrl = require('valid-url');
-const {nanoid} = require('nanoid');
-const jwt = require('jsonwebtoken');
-
-const nodemailer = require('nodemailer');//importing node mailer
-const {google} = require('googleapis');
-const {OAuth2}  = google.auth;
+import nodemailer from 'nodemailer';//importing node mailer
+import {google} from 'googleapis';
+// import {OAuth2}  from  google.auth;
 console.log('process.env',process.env.CLIENT_ID);
 const CLIENT_ID = `${process.env.CLIENT_ID}`;
 const CLIENT_SECRET = `${process.env.CLIENT_SECRET}`;
 const REDIRECT_URI = `${process.env.REDIRECT_URI}`;
 const REFRESH_TOKEN = `${process.env.REFRESH_TOKEN}`;
 
-const ShortUrl = require("./models/shortUrls");
-const generateURLId = require("./utils");
+import ShortUrl from "./models/shortUrls.js";
+import generateURLId from "./utils.js";
 
-const RegisterUser = require("./models/registerUser");
-const UserPasswordReset = require('./models/userPasswordReset');
+import RegisterUser from "./models/registerUser.js";
+import UserPasswordReset from './models/userPasswordReset.js';
 // const registerRoutes = require('./routes/register');
+
+import router from './routes/testing.js';
 
 const app = express();
 
@@ -55,6 +58,9 @@ const connectToMongoDb = async () => {
 };
 
 connectToMongoDb();
+
+app.get('/testing', router);
+app.post('/testing', router);
 
 app.post('/register',async (req, res) => {
   console.log('/register',req.body);
@@ -118,7 +124,7 @@ app.post('/confirmEmailResetPassword', async (req, res) => {
       console.log('resetPasswordLink',resetPasswordLink)
       // Create a link the reset/:email/:randomnumber route on the backend and send it to the user email using nodemailer 
 
-      const oAuth2Client = new OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
+      const oAuth2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URI);
       oAuth2Client.setCredentials({refresh_token: REFRESH_TOKEN});
       const accessToken = await oAuth2Client.getAccessToken();
 
@@ -233,43 +239,12 @@ function authenticateToken(req, res, next) {
   })
 }
 
-// Route to post new url to be shortened
-app.post("/url",authenticateToken,(req, res) => {
-  if (req.body.url === undefined || req.body.url === "") {
-    res.status(400).json({ message: "Url is undefined or empty" });
-  } else {
-
-    if (!validUrl.isUri(req.body.url)){
-      return res.status(404).json({message: "Url does not exists"});
-    }
-
-    console.log('res.locals.username', res.locals.username);
-    const shortUrl = new ShortUrl({
-      url: req.body.url,
-      shortUrl: nanoid(5),//generateURLId(),
-      username: res.locals.username,
-      visitCount: 0,
-    });
-    shortUrl
-      .save()
-      .then((result) => {
-        res.json({
-          shortenedUrl: `${process.env.backEndUrl}/${result.shortUrl}`,
-          originalUrl: result.url,
-        });
-      })
-      .catch((err) => {
-        console.log(err);
-      });
-  }
-});
-
-app.get("/favicon.ico", (req, res) => {
+app.get('/favicon.ico', (req, res) => {
   res.send();
 });
 
 // Route to show last few shortened urls along with original url and visit count
-app.get("/recent/:username",authenticateToken, (req, res) => {
+app.get('/recent/:username',authenticateToken, (req, res) => {
   const username = req.params.username; 
   if(username === undefined || req.body.username === ''){
     res.status(400).json({message: "Invalid credentials"});
@@ -294,33 +269,8 @@ app.get('/recentAll', authenticateToken, (req, res) => {
     .catch((err) => console.log(err));
 })
 
-// Route to search for original url when shortened url is passed and also to update the visitCount
-app.get("/:shortUrl", (req, res) => {
-  console.log(':shortUrl', req.params.shortUrl);
-  const shortURLParam = req.params.shortUrl;
-
-  ShortUrl.find({ shortUrl: shortURLParam })
-    .then(async (result) => {
-      if (result.length > 0) {
-        //res.json(result[0].url);
-        res.status(302).redirect(result[0].url);
-        let visitCount = result[0].visitCount + 1;
-        await ShortUrl.updateOne(
-          { shortUrl: shortURLParam },
-          { visitCount: visitCount }
-        );
-      } else {
-        throw new Error("URL not stored in the db");
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-      res.json({ message: "url not found" });
-    });
-});
-
 // Route to show home page
-app.get("/", (req, res) => {
+app.get('/', (req, res) => {
   res.redirect(`${process.env.frontEndUrl}/login.html`);
 });
 
