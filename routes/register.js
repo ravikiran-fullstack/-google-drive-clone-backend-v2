@@ -1,14 +1,9 @@
-const express = require('express');
-const router = express.Router();
+import express from "express";
 
-router.get('/registerPage', (req, res) => {
-  res.json({message: 'registerPage'});
-});
+import { registerUser } from '../controllers/registerController.js';
 
-router.post('/register', (req, res) => {
-  console.log('/register',req.body);
-  res.json({message: 'register'});
-});
+const registerRouter = express.Router();
 
-module.export = router;
+registerRouter.post("/register", registerUser);
 
+export default registerRouter;

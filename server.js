@@ -29,7 +29,8 @@ import RegisterUser from "./models/registerUser.js";
 import UserPasswordReset from './models/userPasswordReset.js';
 // const registerRoutes = require('./routes/register');
 
-import router from './routes/testing.js';
+import loginRouter from './routes/login.js';
+import registerRouter from './routes/register.js';
 
 const app = express();
 
@@ -59,46 +60,7 @@ const connectToMongoDb = async () => {
 
 connectToMongoDb();
 
-app.get('/testing', router);
-app.post('/testing', router);
-
-app.post('/register',async (req, res) => {
-  console.log('/register',req.body);
-
-  if(req.body.username === undefined || req.body.username === '' || req.body.password === undefined || req.body.password === '' || req.body.firstName === undefined || req.body.firstName === '' || req.body.lastName === undefined || req.body.lastName === ''){
-    res.status(400).json({message: "Enter valid credentials"});
-  } else {
-
-    const user = await RegisterUser.findOne({username: req.body.username});
-
-    if(user){
-      res.status(409).json({message: "Username already exists"});
-    } else {
-      try{
-        const hash = await bcrypt.hash(req.body.password, 10);
-        console.log(hash, req.body.password);
-        const registerUser = new RegisterUser({
-          firstName: req.body.firstName,
-          lastName: req.body.lastName,
-          username: req.body.username,
-          password: hash
-        });
-    
-        registerUser.save()
-                      .then(result => res.json({username: result.username}))
-                      .catch(err => console.log(err));
-      } catch(err){
-        console.error('error while hashing or storing user info into db',err);
-      } 
-    }      
-  }
-});
-
-// app.get("/test", (req, res) => {
-//   res
-//     .status(404)
-//     .sendFile(path.join(__dirname, "views", "page-not-found.html"));
-// });
+app.post('/register', registerRouter);
 
 app.post('/confirmEmailResetPassword', async (req, res) => { 
   
@@ -196,31 +158,7 @@ app.post('/resetPassword', async (req, res) => {
   } 
 });
 
-app.post('/login', async (req, res) => {
-  console.log('/login',req.body);
-  if(req.body.username === undefined || req.body.username === '' || req.body.password === undefined || req.body.password === '' ){
-    res.status(400).json({message: "Enter valid credentials"});
-  } else{
-    const user = await RegisterUser.findOne({ username: req.body.username });
-    if(!user){
-      res.status(400).json({message: "Invalid username or password"});
-    } else {
-      const isPasswordValid = await bcrypt.compare(req.body.password, user.password);
-      if(isPasswordValid){
-        const token = jwt.sign({
-                        exp: Math.floor(Date.now() / 1000) + (60 * 60),
-                        data: user.username
-                      }, process.env.JWT_SECRET); //jwt.sign({username: user.username}, process.env.JWT_SECRET);
-        console.log('token',token);
-        //res.cookie("jwt", token, {secure: true, httpOnly: true})
-        // res.setHeader({'accessToken': accessToken});
-        res.json({username: user.username, token});
-      } else {
-        res.status(400).json({message: "Invalid username or password"});
-      }
-    }
-  }
-});
+app.post('/login', loginRouter);
 
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization']
