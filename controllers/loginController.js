@@ -15,6 +15,8 @@ export const logInUser = async (req, res) => {
     const user = await RegisterUser.findOne({ username: req.body.username });
     if (!user) {
       res.status(400).json({ message: "Invalid username or password" });
+    } else if (!user.emailVerified) { 
+      res.status(400).json({ message: "Please verify your email to signin" });
     } else {
       const isPasswordValid = await bcrypt.compare(
         req.body.password,

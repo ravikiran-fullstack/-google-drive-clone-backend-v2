@@ -12,6 +12,7 @@ import ShortUrl from "./models/shortUrls.js";
 import loginRouter from './routes/login.js';
 import registerRouter from './routes/register.js';
 import passwordRouter from './routes/password.js';
+import authenticateEmailRouter from './routes/authenticateEmail.js';
 
 const app = express();
 
@@ -42,10 +43,10 @@ const connectToMongoDb = async () => {
 connectToMongoDb();
 
 app.post('/register', registerRouter);
+app.get('/authemail/:username/:randomKey', authenticateEmailRouter);
 
 app.post('/confirmEmailResetPassword', passwordRouter);
 app.get('/reset/:username/:randomKey', passwordRouter);
-
 
 app.post('/reset', async (req, res) => {
   console.log(req.body);
