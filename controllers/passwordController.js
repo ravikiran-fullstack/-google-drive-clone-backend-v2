@@ -9,7 +9,6 @@ const REFRESH_TOKEN = `${process.env.REFRESH_TOKEN}`;
 import RegisterUser from "../models/registerUser.js";
 import UserPasswordReset from "../models/userPasswordReset.js";
 import bcrypt from "bcrypt";
-import jwt from "jsonwebtoken";
 import { nanoid } from "nanoid";
 import nodemailer from "nodemailer"; //importing node mailer
 import { google } from "googleapis";
@@ -89,7 +88,6 @@ export const resetPassword = async (req, res) => {
     username: req.body.username,
   }).sort({ createdAt: "desc" });
   const latestResetObj = result[0];
-  console.log(latestResetObj, req.body);
   if (latestResetObj.expirationDate > new Date()) {
     const hash = await bcrypt.hash(req.body.password, 10);
     const dbResult = await RegisterUser.updateOne(
