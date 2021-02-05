@@ -1,4 +1,4 @@
-const base64 = require('base-64');
+import base64 from 'base-64';
 
 function generateURLId() {
   const urlIdLength = 5;
@@ -19,4 +19,4 @@ function generateUrlIdUsingBtoa(){
   return id;
 }
 
-module.exports = generateURLId;
+export default generateURLId;
