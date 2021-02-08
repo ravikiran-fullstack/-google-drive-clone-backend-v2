@@ -12,6 +12,7 @@ import loginRouter from "./routes/login.js";
 import registerRouter from "./routes/register.js";
 import passwordRouter from "./routes/password.js";
 import authenticateEmailRouter from "./routes/authenticateEmail.js";
+import uploadFilesRouter from './routes/uploadFiles.js';
 
 const app = express();
 
@@ -72,6 +73,7 @@ app.get("/recent/:username", authenticateToken, (req, res) => {
 });
 
 app.get("/recentAll", authenticateToken, (req, res) => {
+  console.log('res.locals.username', res.locals.username)
   ShortUrl.find()
     .limit(5)
     .sort({ createdAt: "desc" })
@@ -96,13 +98,19 @@ app.post("/authenticateSession", (req, res) => {
   });
 });
 
+app.get("/geturl", authenticateToken, uploadFilesRouter);
+
+app.post("/puturl",authenticateToken, uploadFilesRouter);
+
 function authenticateToken(req, res, next) {
+  //console.log('passing bearer token')
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  console.log("token", token);
+  //console.log("token", token);
   if (token == null) return res.sendStatus(401); // if there isn't any token
   jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {
     if (err) {
+      console.log('err', err);
       return res.sendStatus(403).redirect("/login.html");
     } else {
       console.log(payload);
