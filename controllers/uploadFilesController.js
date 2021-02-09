@@ -65,7 +65,7 @@ export const generatePutUrl = async (req, res) => {
 export const generateGetUrl = async (req, res) => {
   const params = {
     Bucket: config.bucketName,
-    Key: `hello.jpg`,
+    Key: `${res.locals.username}/${req.body.filename}`,
   };
 
   try {

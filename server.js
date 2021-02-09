@@ -13,6 +13,7 @@ import registerRouter from "./routes/register.js";
 import passwordRouter from "./routes/password.js";
 import authenticateEmailRouter from "./routes/authenticateEmail.js";
 import uploadFilesRouter from './routes/uploadFiles.js';
+import retrieveFileRouter from './routes/retrieveFiles.js';
 
 const app = express();
 
@@ -98,14 +99,17 @@ app.post("/authenticateSession", (req, res) => {
   });
 });
 
-app.get("/geturl", authenticateToken, uploadFilesRouter);
+app.post("/geturl", authenticateToken, uploadFilesRouter);
 
-app.post("/puturl",authenticateToken, uploadFilesRouter);
+app.post("/puturl", authenticateToken, uploadFilesRouter);
+
+app.get("/allfiles", authenticateToken, retrieveFileRouter);
 
 function authenticateToken(req, res, next) {
-  //console.log('passing bearer token')
+  
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
+  console.log('passing bearer token', token);
   //console.log("token", token);
   if (token == null) return res.sendStatus(401); // if there isn't any token
   jwt.verify(token, process.env.JWT_SECRET, (err, payload) => {

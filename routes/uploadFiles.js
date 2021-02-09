@@ -6,6 +6,6 @@ const uploadFilesRouter = express.Router();
 
 uploadFilesRouter.post("/uploadfile", uploadFile);
 uploadFilesRouter.post("/puturl", generatePutUrl);
-uploadFilesRouter.get("/geturl", generateGetUrl);
+uploadFilesRouter.post("/geturl", generateGetUrl);
 
 export default uploadFilesRouter;
